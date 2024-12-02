@@ -1,6 +1,7 @@
 package com.example.asyncdemo.controller;
 
 import com.example.asyncdemo.User;
+import com.example.asyncdemo.exception.UserNotFoundException;
 import com.example.asyncdemo.service.async.GitHubLookUpService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,5 +30,18 @@ public class UserController {
                 return ResponseEntity.notFound().build();
             }
         });
+    }
+
+    @GetMapping("/{username}/blog")
+    public CompletableFuture<String> getUserWithBlog(@PathVariable String username) {
+        return lookUpService.findUser(username)
+                .thenCompose(user -> lookUpService.findBlog(user.getBlog()))
+                .exceptionally(ex -> {
+                    if (ex.getCause() instanceof UserNotFoundException) {
+                        return ex.getMessage();
+                    } else {
+                        return "Erro ocorreu ao tentar recuperar blog do user";
+                    }
+                });
     }
 }

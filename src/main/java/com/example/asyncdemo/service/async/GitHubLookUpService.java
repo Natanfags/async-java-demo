@@ -38,8 +38,20 @@ public class GitHubLookUpService {
             Thread.sleep(randon);
             return CompletableFuture.completedFuture(results);
         } catch (RestClientException | InterruptedException e) {
-            log.error("Erro ao buscar user  " + user, e);
+            log.error("Erro ao buscar user " + user, e);
             throw new UserNotFoundException("User não encontrado: " + user, e);
+        }
+    }
+
+    @Async
+    public CompletableFuture<String> findBlog(String blogUrl) {
+        log.info("Fetching blog content from " + blogUrl);
+        try {
+
+            Thread.sleep(ThreadLocalRandom.current().nextLong(1000, 2001));
+            return CompletableFuture.completedFuture("Content of blog: " + blogUrl);
+        } catch (InterruptedException e) {
+            return CompletableFuture.failedFuture(e);
         }
     }
 }
