@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/user")
@@ -22,9 +21,13 @@ public class UserController {
     }
 
     @GetMapping("/{user}")
-    public ResponseEntity<User> getUser(@PathVariable String user) throws InterruptedException, ExecutionException {
-        final CompletableFuture<User> user1 = lookUpService.findUser(user);
-        return ResponseEntity.ok(user1.get());
+    public CompletableFuture<ResponseEntity<User>> getUser(@PathVariable String user) {
+        return lookUpService.findUser(user).thenApply(result -> {
+            if (result != null) {
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        });
     }
-
 }
