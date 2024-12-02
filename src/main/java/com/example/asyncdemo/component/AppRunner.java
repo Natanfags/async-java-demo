@@ -1,11 +1,10 @@
-package com.example.asyncdemo;
+package com.example.asyncdemo.component;
 
+import com.example.asyncdemo.service.async.GitHubLookUpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class AppRunner implements CommandLineRunner {
@@ -20,7 +19,10 @@ public class AppRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        long start = System.currentTimeMillis();
+
+        // desligado devido a consulta agora ser via API
+
+        /*long start = System.currentTimeMillis();
 
         CompletableFuture<User> page1 = gitHubLookUpService.findUser("PivotalSoftware");
         CompletableFuture<User> page2 = gitHubLookUpService.findUser("CloudFoundry");
@@ -31,6 +33,6 @@ public class AppRunner implements CommandLineRunner {
         log.info("Tempo decorrido: " + (System.currentTimeMillis() - start));
         log.info("--> " + page1.get());
         log.info("--> " + page2.get());
-        log.info("--> " + page3.get());
+        log.info("--> " + page3.get());*/
     }
 }
