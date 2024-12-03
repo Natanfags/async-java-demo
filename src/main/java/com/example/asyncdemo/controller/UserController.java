@@ -35,7 +35,8 @@ public class UserController {
     @GetMapping("/{username}/blog")
     public CompletableFuture<String> getUserWithBlog(@PathVariable String username) {
         return lookUpService.findUser(username)
-                .thenCompose(user -> lookUpService.findBlog(user.getBlog()))
+                .thenCompose(user -> lookUpService.findBlog(user.getBlog())
+                        .thenApply(blogContent -> "Content issss :" + blogContent))
                 .exceptionally(ex -> {
                     if (ex.getCause() instanceof UserNotFoundException) {
                         return ex.getMessage();
@@ -43,5 +44,20 @@ public class UserController {
                         return "Erro ocorreu ao tentar recuperar blog do user";
                     }
                 });
+    }
+
+    @GetMapping("/{userName}/blog-status")
+    public CompletableFuture<String> checkStatus(@PathVariable String userName) {
+        return lookUpService.findUser(userName)
+                .thenCompose(user -> lookUpService.findBlog(user.getBlog())
+                        .thenCompose(lookUpService::checkUrl)
+                        .exceptionally(ex -> {
+                            if (ex.getCause() instanceof Exception) {
+                                return "Erro ao verificar a URL do blog: " + ex.getMessage();
+                            } else {
+                                return "Erro desconhecido ao verificar a URL.";
+                            }
+                        })
+                );
     }
 }
