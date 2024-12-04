@@ -7,8 +7,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -36,7 +39,7 @@ public class UserController {
     public CompletableFuture<String> getUserWithBlog(@PathVariable String username) {
         return lookUpService.findUser(username)
                 .thenCompose(user -> lookUpService.findBlog(user.getBlog())
-                        .thenApply(blogContent -> "Content issss :" + blogContent))
+                        .thenApply(blogContent -> "Content is :" + blogContent))
                 .exceptionally(ex -> {
                     if (ex.getCause() instanceof UserNotFoundException) {
                         return ex.getMessage();
@@ -50,7 +53,7 @@ public class UserController {
     public CompletableFuture<String> checkStatus(@PathVariable String userName) {
         return lookUpService.findUser(userName)
                 .thenCompose(user -> lookUpService.findBlog(user.getBlog())
-                        .thenCompose(lookUpService::checkUrl)
+                        .thenCompose(lookUpService::checkIfBlogIsOnline)
                         .exceptionally(ex -> {
                             if (ex.getCause() instanceof Exception) {
                                 return "Erro ao verificar a URL do blog: " + ex.getMessage();
@@ -59,5 +62,21 @@ public class UserController {
                             }
                         })
                 );
+    }
+
+    @GetMapping("/f")
+    public CompletableFuture<ResponseEntity<List<User>>> getUsers(@RequestParam List<String> users) {
+        List<CompletableFuture<User>> userFutures = users.stream().map(user -> lookUpService.findUser(user).thenCompose(foundUser -> {
+            if (foundUser != null && foundUser.getBlog() != null) {
+                return lookUpService.checkIfBlogIsOnline(foundUser.getBlog()).thenApply(blogStatus -> {
+                    System.out.println(blogStatus);
+                    return foundUser;
+                });
+            } else {
+                return CompletableFuture.completedFuture(foundUser);
+            }
+        })).toList();
+
+        return CompletableFuture.allOf(userFutures.toArray(new CompletableFuture[0])).thenApply(v -> userFutures.stream().map(CompletableFuture::join).filter(Objects::nonNull).toList()).thenApply(ResponseEntity::ok);
     }
 }

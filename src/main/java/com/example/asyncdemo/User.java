@@ -8,6 +8,11 @@ public class User {
     private String name;
     private String blog;
 
+    public User(String name, String blog) {
+        this.name = name;
+        this.blog = blog;
+    }
+
     @Override
     public String toString() {
         return "User [name=" + name + ", blog=" + blog + "]";
@@ -27,5 +32,9 @@ public class User {
 
     public void setBlog(String blog) {
         this.blog = blog;
+    }
+
+    public void setBlogStatus(String blogStatus) {
+        this.setBlogStatus("");
     }
 }
